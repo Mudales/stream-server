@@ -154,6 +154,8 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto https;
         proxy_set_header Connection "";
+        # Chrome Private Network Access: lets https://web.stremio.com reach this LAN address
+        add_header Access-Control-Allow-Private-Network "true" always;
         # video streams: no buffering, long timeouts
         proxy_buffering off;
         proxy_request_buffering off;
