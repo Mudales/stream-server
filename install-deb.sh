@@ -45,7 +45,7 @@ fi
 step "Checking the system"
 [ "$(id -u)" -eq 0 ] || die "run as root (sudo)"
 [ "$(dpkg --print-architecture)" = amd64 ] || die "the .deb is amd64 only; use the Docker install instead"
-glibc="$(ldd --version | head -1 | awk '{print $NF}')"
+glibc="$(getconf GNU_LIBC_VERSION | awk '{print $2}')"
 [ "$(printf '%s\n' 2.39 "$glibc" | sort -V | head -1)" = 2.39 ] ||
   die "glibc $glibc is too old, the .deb needs Ubuntu 24.04 or newer"
 missing=""
@@ -63,8 +63,10 @@ ok "Ubuntu glibc $glibc, amd64, CPU supports x86-64-v3"
 
 # --- 2. Download --------------------------------------------------------------
 if [ -z "$VERSION" ]; then
-  VERSION="$(curl -fsSL "https://api.github.com/repos/$UPSTREAM/releases/latest" | grep -m1 '"tag_name"' | cut -d'"' -f4)"
-  [ -n "$VERSION" ] || die "could not find the latest release"
+  # github.com/<repo>/releases/latest redirects to .../releases/tag/<version>
+  latest="$(curl -fsSLo /dev/null -w '%{url_effective}' "https://github.com/$UPSTREAM/releases/latest")"
+  VERSION="${latest##*/}"
+  [[ "$VERSION" == v* ]] || die "could not find the latest release"
 fi
 step "Downloading stream-server $VERSION"
 tmp="$(mktemp -d)"
@@ -74,7 +76,7 @@ deb="stream-server-linux-amd64.deb"
 base="https://github.com/$UPSTREAM/releases/download/$VERSION"
 curl -fsSL -o "$tmp/$deb" "$base/$deb"
 curl -fsSL -o "$tmp/SHA256SUMS.txt" "$base/SHA256SUMS.txt"
-sum="$(grep -w "$deb" "$tmp/SHA256SUMS.txt" | awk '{print $1}' | head -1)"
+sum="$(awk -v f="$deb" '$2 == f || $2 == "*" f { print $1; exit }' "$tmp/SHA256SUMS.txt")"
 [ -n "$sum" ] || die "$deb is not listed in SHA256SUMS.txt"
 echo "$sum  $tmp/$deb" | sha256sum -c --quiet - || die "checksum mismatch"
 ok "downloaded and verified"
@@ -127,7 +129,8 @@ case "$HTTPS" in
   nginx)
     mkdir -p "$TLS_DIR"
     make_cert "$TLS_DIR/cert.pem" "$TLS_DIR/key.pem" root
-    if ss -ltnp 'sport = :443' | grep -q LISTEN && ! ss -ltnp 'sport = :443' | grep -q nginx; then
+    listeners="$(ss -Hltnp 'sport = :443')"
+    if [ -n "$listeners" ] && ! grep -q nginx <<<"$listeners"; then
       die "port 443 is used by another program; use --https none behind your existing proxy"
     fi
     DEBIAN_FRONTEND=noninteractive apt-get install -y -qq nginx >/dev/null
