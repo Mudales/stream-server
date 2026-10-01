@@ -1,6 +1,6 @@
 # Stream Server
 
-> **This fork** adds Docker self-hosting for web.stremio.com: see [DOCKER.md](DOCKER.md).
+> **This fork** adds self-hosting for web.stremio.com (.deb + systemd, or Docker): see [SELF-HOSTING.md](SELF-HOSTING.md).
 
 
 <div align="center">
