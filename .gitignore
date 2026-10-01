@@ -6,3 +6,8 @@
 /vcpkg_installed
 err.txt
 /System.Collections.Hashtable.Root/
+
+# Docker self-hosting (local data)
+/data
+/certs
+.env

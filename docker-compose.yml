@@ -1,0 +1,23 @@
+services:
+  stremio:
+    build:
+      context: .
+      args:
+        TARGET_CPU: ${TARGET_CPU:-}
+    image: stream-server:local
+    container_name: stremio
+    ports:
+      - "11470:11470"   # HTTP
+      - "443:12470"     # HTTPS
+    environment:
+      CERT_HOSTS: ${CERT_HOSTS:-}
+    volumes:
+      - ./data:/data          # settings, logs, certificate, torrent cache
+      - ./certs:/certs:ro     # optional: your own cert.pem + key.pem
+    # devices:
+    #   - /dev/dri:/dev/dri   # hardware transcoding (Intel/AMD iGPU)
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2g

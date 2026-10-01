@@ -1,0 +1,6 @@
+.git
+target
+target-patched
+data
+certs
+.env

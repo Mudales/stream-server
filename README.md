@@ -1,5 +1,8 @@
 # Stream Server
 
+> **This fork** adds Docker self-hosting for web.stremio.com: see [DOCKER.md](DOCKER.md).
+
+
 <div align="center">
 
 **🚀 Open Source Torrent Streaming Engine**
