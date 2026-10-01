@@ -17,7 +17,3 @@ services:
     # devices:
     #   - /dev/dri:/dev/dri   # hardware transcoding (Intel/AMD iGPU)
     restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 2g
