@@ -190,7 +190,8 @@ Environment=XDG_CACHE_HOME=$DATA_DIR/cache
 ExecStart=/usr/bin/stream-server --no-tray
 Restart=on-failure
 RestartSec=5
-MemoryMax=2G
+# Counts the page cache of downloaded files too, not just the server's own RAM.
+MemoryMax=4G
 NoNewPrivileges=yes
 PrivateTmp=yes
 ProtectHome=yes
