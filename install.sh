@@ -106,14 +106,11 @@ ok "$INSTALL_DIR at commit $rev"
 step "Configuring"
 if [ ! -f .env ]; then
   hosts="${CERT_HOSTS:-$(hostname -I 2>/dev/null | tr ' ' '\n' | grep -v -e ':' -e '^$' | paste -sd, -),$(hostname)}"
-  cpu=""
-  if [ "$(uname -m)" = x86_64 ] && ! grep -qw avx2 /proc/cpuinfo; then
-    cpu="x86-64-v2"
-    warn "CPU has no AVX2, building for x86-64-v2"
-  fi
-  printf 'CERT_HOSTS=%s\nTARGET_CPU=%s\n' "$hosts" "$cpu" > .env
+  printf 'CERT_HOSTS=%s\n' "$hosts" > .env
   ok "wrote .env (CERT_HOSTS=$hosts)"
 else
+  # Older installers wrote TARGET_CPU automatically; drop it so the build uses "native".
+  sed -i -e '/^TARGET_CPU=$/d' -e '/^TARGET_CPU=x86-64-v2$/d' .env
   ok "keeping existing .env"
 fi
 

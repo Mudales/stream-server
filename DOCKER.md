@@ -16,7 +16,7 @@ The installer:
 1. Finds the old `server.js` setup (`stremio-manager.service`, the old `stremio` container and its
    `stremio-cache` folder) and asks before removing each one.
 2. Clones this repo to `/opt/stream-server` (or updates it).
-3. Writes `.env` with the server's IPs for the certificate, and picks `x86-64-v2` if the CPU has no AVX2.
+3. Writes `.env` with the server's IPs for the certificate.
 4. After an update to a new commit, clears the old torrent cache (settings and certificate are kept).
 5. Builds the image, starts the container and waits for `/heartbeat`.
 
@@ -100,5 +100,8 @@ Uninstall: `docker compose down --rmi local && sudo rm -rf /opt/stream-server`.
 
 - The image is built from this repo's source, so your own changes are included. The first build
   compiles libtorrent and a release Rust binary (LTO): 15–30+ minutes and about 4 GB of RAM.
-- `.cargo/config.toml` targets `x86-64-v3` (AVX2). Set `TARGET_CPU=x86-64-v2` in `.env` for older CPUs.
+- The binary is built for the CPU of the machine that builds it (`target-cpu=native`). To build on one
+  machine and run on another, set e.g. `TARGET_CPU=x86-64-v2` in `.env`.
+- Proxmox VMs: the default CPU type hides AVX2 and other instructions. Setting the VM's CPU type to
+  `host` (Hardware → Processors) lets the build use them and is faster in general.
 - Hardware transcoding: uncomment the `/dev/dri` device in `docker-compose.yml`.

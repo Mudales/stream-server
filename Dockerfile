@@ -20,10 +20,11 @@ RUN bash /tmp/install-libtorrent.sh
 
 WORKDIR /src
 COPY . .
-# .cargo/config.toml targets x86-64-v3 (AVX2). For older CPUs: TARGET_CPU=x86-64-v2
+# .cargo/config.toml pins x86-64-v3 (AVX2), which crashes with SIGILL on CPUs/VMs without it
+# (e.g. Proxmox's default CPU type). RUSTFLAGS overrides that; the default "native" builds for
+# the CPU doing the build, i.e. the server that will run it.
 ARG TARGET_CPU=""
-RUN if [ -n "$TARGET_CPU" ]; then export RUSTFLAGS="-C target-cpu=$TARGET_CPU"; fi \
- && cargo build --release -p server \
+RUN RUSTFLAGS="-C target-cpu=${TARGET_CPU:-native}" cargo build --release -p server \
  && cp target/release/server /stream-server
 
 # ---------- runtime ----------
